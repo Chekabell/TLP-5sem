@@ -1,0 +1,49 @@
+Index: TLP-5sem.cpp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>#include <iostream>\r\n#include <fstream>\r\n\r\nenum States { Default, BeginComment, MultilineComment, MonolineComment, Asterisk, Char, String, BackSlashInChar, BackSlashInString };\r\n\r\nint main() {\r\n\tstd::fstream fs;\r\n\tstd::ofstream out;\r\n\tchar tmp;\r\n\tStates state = States::Default;\r\n\r\n\tfs.open(\"test.cpp\");\r\n\tout.open(\"outtest.cpp\", std::ios::out);\r\n\r\n\tif (fs.is_open() && out.is_open()) {\r\n\t\twhile (!fs.eof()) {\r\n\t\t\tfs.get(tmp);\r\n\t\t\tswitch (state) {\r\n\t\t\tcase States::Default:\r\n\t\t\t\tif (tmp == '/')\t\t\tstate = States::BeginComment;\r\n\t\t\t\telse if (tmp == '\\'') {\r\n\t\t\t\t\tout.put(tmp);\r\n\t\t\t\t\tstate = States::Char;\r\n\t\t\t\t}\r\n\t\t\t\telse if (tmp == '\\\"') {\r\n\t\t\t\t\tstate = States::String;\r\n\t\t\t\t\tout.put(tmp);\r\n\t\t\t\t}\r\n\t\t\t\telse out.put(tmp);\r\n\t\t\t\tbreak;\r\n\t\t\tcase States::BeginComment:\r\n\t\t\t\tif (tmp == '/')\t\t\tstate = States::MonolineComment;\r\n\t\t\t\telse if (tmp == '*')\tstate = States::MultilineComment;\r\n\t\t\t\telse {\r\n\t\t\t\t\tout.put('/');\r\n\t\t\t\t\tout.put(tmp);\r\n\t\t\t\t\tstate = States::Default;\r\n\t\t\t\t}\r\n\t\t\t\tbreak;\r\n\t\t\tcase States::MultilineComment:\r\n\t\t\t\tif (tmp == '*') state = States::Asterisk;\r\n\t\t\t\tbreak;\r\n\t\t\tcase States::Asterisk:\r\n\t\t\t\tif (tmp == '/') {\r\n\t\t\t\t\tstate = States::Default;\r\n\t\t\t\t\tout.put(' ');\r\n\t\t\t\t}\r\n\t\t\t\telse if (tmp != '*') state = States::MultilineComment;\r\n\t\t\t\tbreak;\r\n\t\t\tcase States::MonolineComment:\r\n\t\t\t\tif (tmp == '\\n' || tmp == '\\r') {\r\n\t\t\t\t\tout.put(tmp);\r\n\t\t\t\t\tstate = States::Default;\r\n\t\t\t\t}\r\n\t\t\t\tbreak;\r\n\t\t\tcase States::Char:\r\n\t\t\t\tif (tmp == '\\\\') {\r\n\t\t\t\t\tstate = States::BackSlashInChar;\r\n\t\t\t\t}\r\n\t\t\t\telse if (tmp == '\\'') {\r\n\t\t\t\t\tstate = States::Default;\r\n\t\t\t\t}\r\n\t\t\t\tout.put(tmp);\r\n\t\t\t\tbreak;\r\n\t\t\tcase States::BackSlashInChar:\r\n\t\t\t\tout.put(tmp);\r\n\t\t\t\tstate = States::Char;\r\n\t\t\t\tbreak;\r\n\t\t\tcase States::String:\r\n\t\t\t\tif (tmp == '\\\\') {\r\n\t\t\t\t\tstate = States::BackSlashInString;\r\n\t\t\t\t}\r\n\t\t\t\telse if (tmp == '\\\"') {\r\n\t\t\t\t\tstate = States::Default;\r\n\t\t\t\t}\r\n\t\t\t\tout.put(tmp);\r\n\t\t\t\tbreak;\r\n\t\t\tcase States::BackSlashInString:\r\n\t\t\t\tout.put(tmp);\r\n\t\t\t\tstate = States::String;\r\n\t\t\t\tbreak;\r\n\t\t\t}\r\n\t\t}\r\n\t}\r\n\r\n\tfs.close();\r\n\tout.close();\r\n\r\n\treturn 0;\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/TLP-5sem.cpp b/TLP-5sem.cpp
+--- a/TLP-5sem.cpp	(revision 65e7d2e270778954e79e32750f04d32fb6a8b657)
++++ b/TLP-5sem.cpp	(date 1728641967760)
+@@ -1,18 +1,17 @@
+-#include <iostream>
+ #include <fstream>
+ 
+-enum States { Default, BeginComment, MultilineComment, MonolineComment, Asterisk, Char, String, BackSlashInChar, BackSlashInString };
++enum States : uint8_t { Default, BeginComment, MultilineComment, SingleLineComment, Asterisk, Char, String, BackSlashInChar, BackSlashInString };
+ 
+ int main() {
+ 	std::fstream fs;
+ 	std::ofstream out;
+-	char tmp;
+ 	States state = States::Default;
+ 
+ 	fs.open("test.cpp");
+ 	out.open("outtest.cpp", std::ios::out);
+ 
+ 	if (fs.is_open() && out.is_open()) {
++		char tmp;
+ 		while (!fs.eof()) {
+ 			fs.get(tmp);
+ 			switch (state) {
+@@ -29,7 +28,7 @@
+ 				else out.put(tmp);
+ 				break;
+ 			case States::BeginComment:
+-				if (tmp == '/')			state = States::MonolineComment;
++				if (tmp == '/')			state = States::SingleLineComment;
+ 				else if (tmp == '*')	state = States::MultilineComment;
+ 				else {
+ 					out.put('/');
+@@ -47,7 +46,7 @@
+ 				}
+ 				else if (tmp != '*') state = States::MultilineComment;
+ 				break;
+-			case States::MonolineComment:
++			case States::SingleLineComment:
+ 				if (tmp == '\n' || tmp == '\r') {
+ 					out.put(tmp);
+ 					state = States::Default;
