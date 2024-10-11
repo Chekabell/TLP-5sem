@@ -1,18 +1,18 @@
-#include <iostream>
 #include <fstream>
 
-enum States { Default, BeginComment, MultilineComment, MonolineComment, Asterisk, Char, String, BackSlashInChar, BackSlashInString };
+enum class States : uint8_t { Default, BeginComment, MultilineComment, SingleLineComment, Asterisk, Char, String, BackSlashInChar, BackSlashInString };
 
 int main() {
 	std::fstream fs;
 	std::ofstream out;
-	char tmp;
+
 	States state = States::Default;
 
 	fs.open("test.cpp");
 	out.open("outtest.cpp", std::ios::out);
 
 	if (fs.is_open() && out.is_open()) {
+		char tmp;
 		while (!fs.eof()) {
 			fs.get(tmp);
 			switch (state) {
@@ -29,7 +29,7 @@ int main() {
 				else out.put(tmp);
 				break;
 			case States::BeginComment:
-				if (tmp == '/')			state = States::MonolineComment;
+				if (tmp == '/')			state = States::SingleLineComment;
 				else if (tmp == '*')	state = States::MultilineComment;
 				else {
 					out.put('/');
@@ -47,7 +47,7 @@ int main() {
 				}
 				else if (tmp != '*') state = States::MultilineComment;
 				break;
-			case States::MonolineComment:
+			case States::SingleLineComment:
 				if (tmp == '\n' || tmp == '\r') {
 					out.put(tmp);
 					state = States::Default;
