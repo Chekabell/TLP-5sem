@@ -8,13 +8,12 @@ int main() {
 
 	States state = States::Default;
 
-	fs.open("test.cpp");
-	out.open("outtest.cpp", std::ios::out);
+	fs.open("test2.cpp");
+	out.open("out_test2.cpp", std::ios::out);
 
 	if (fs.is_open() && out.is_open()) {
 		char tmp;
-		while (!fs.eof()) {
-			fs.get(tmp);
+		while (fs.get(tmp)) {
 			switch (state) {
 			case States::Default:
 				if (tmp == '/')			state = States::BeginComment;
