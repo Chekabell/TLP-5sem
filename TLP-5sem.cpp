@@ -5,6 +5,7 @@ enum class States : std::uint8_t { Default, Slash, Comment, Star };
 int main() {
 	std::fstream fs;
 	std::ofstream out;
+	
 	States state = States::Default;
 
 	fs.open("test.cpp");
@@ -12,8 +13,7 @@ int main() {
 
 	if (fs.is_open() && out.is_open()) {
 		char tmp;
-		while (!fs.eof()) {
-			fs.get(tmp);
+		while (fs.get(tmp)) {
 			switch (state) {
 			case States::Default:
 				if (tmp == '/') state = States::Slash;
