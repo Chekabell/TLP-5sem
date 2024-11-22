@@ -128,6 +128,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="TLP-5sem.cpp" />
+    <ClCompile Include="Translator.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Translator.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
