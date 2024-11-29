@@ -47,18 +47,19 @@ bool Translator::IsSpace(char value)
     return value == ' ' || value == '\t' || value == '\n' || value == '\r';
 }
 
-bool Translator::IsAplha(char value)
+bool Translator::IsAlpha(char value)
 {
     return value >= 'a' && value <= 'z';
 }
 
 void Translator::Error(std::string msg)
 {
+    _inputFile.close();
     std::cout << "\nError: " << msg << "\n";
     throw "Abort parsing.";
 }
 
-void Translator::AddOrReplace(std::pair<std::string, int> value)
+void Translator::AddOrReplace(const std::pair<std::string, int>& value)
 {
     for (auto &x :  symTable)
     {
@@ -71,20 +72,20 @@ void Translator::AddOrReplace(std::pair<std::string, int> value)
     symTable.push_back(value);
 }
 
-
-std::pair<std::string, int> Translator::ProcS()
+int Translator::ProcS()
 {
     if(curr != '(') Error("Expected '('");
     GetChar();
     
-    std::string id = "";
-    while(IsAplha(curr))
+    std::string id;
+    while(IsAlpha(curr))
     {
         id += curr;
         GetChar();
     }
-    
-    GetChar();
+
+    if(curr != ',') Error("Expected ','");
+    GetChar(); 
     std::pair<std::string, int> pair = std::make_pair(id, ProcE());
     AddOrReplace(pair);
     if(curr != ')') Error("Expected ')'");
@@ -93,7 +94,7 @@ std::pair<std::string, int> Translator::ProcS()
     std::cout << "Operator defined " << _numberOfOperands << ":\t";
     std::cout << pair.first << " = " << pair.second << '\n';
     _numberOfOperands++;
-    return pair;
+    return pair.second;
 }
 
 
@@ -102,18 +103,21 @@ int Translator::ProcE()
     if(IsDigit(curr))
         Error("Expected a '#' or operand");
     if (curr == '-')
-        return ProcE()-1;
+    {
+        GetChar();
+        return ProcE()*(-1);
+    }
     if (curr == '+')
         return ProcT();
     if (curr == '*')
         return ProcT();
     if (curr == '(')
-        return ProcS().second;
+        return ProcS();
     if (curr == '#')
         return ProcR();
-    if (IsAplha(curr))
+    if (IsAlpha(curr))
         return ProcI();
-    return 0;
+    Error("Error");
 }
 
 int Translator::ProcT()
@@ -125,16 +129,17 @@ int Translator::ProcT()
         if(curr != '(') Error("Expected '('");
         GetChar();
         res = ProcE();
+        if(curr != ',') Error("Expected ','");
         GetChar();
-        if(curr != '#' && !IsAplha(curr) && curr != '(')
-            Error("Expected number or operand");
         while(curr != EOF)
         {
-            if(curr == ',')
-                GetChar();
             res += ProcE();
             if (curr == ')')
                 break;
+            if(curr == ',')
+                GetChar();
+            else
+                Error("Expected ',' or ')'");
         }
     }
     if(curr == '*')
@@ -143,16 +148,17 @@ int Translator::ProcT()
         if(curr != '(') Error("Expected '('");
         GetChar();
         res = ProcE();
+        if(curr != ',') Error("Expected ','");
         GetChar();
-        if(curr != '#' && !IsAplha(curr) && curr != '(')
-            Error("Expected number or operand");
         while(curr != EOF)
         {
-            if(curr == ',')
-                GetChar();
             res *= ProcE();
             if (curr == ')')
                 break;
+            if(curr == ',')
+                GetChar();
+            else
+                Error("Expected ',' or ')'");
         }
     }
     GetChar();
@@ -161,8 +167,8 @@ int Translator::ProcT()
 
 int Translator::ProcI()
 {
-    std::string id = "";
-    while(IsAplha(curr))
+    std::string id;
+    while(IsAlpha(curr))
     {
         id += curr;
         GetChar();
@@ -180,7 +186,7 @@ int Translator::ProcI()
 
 int Translator::ProcR()
 {
-    std::string result = "";
+    std::string result;
     GetChar();
     while (IsDigit(curr)) {
         result += curr;

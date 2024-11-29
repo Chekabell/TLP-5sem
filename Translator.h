@@ -22,11 +22,11 @@ private:
     void GetChar();
     bool IsDigit(char value);
     bool IsSpace(char value);
-    bool IsAplha(char value);
+    bool IsAlpha(char value);
     void Error (std::string msg);
-    void AddOrReplace(std::pair<std::string, int> value);;
+    void AddOrReplace(const std::pair<std::string, int>& value);
     
-    std::pair<std::string, int> ProcS();
+    int ProcS();
     int ProcE();
     int ProcT();
     int ProcI();
