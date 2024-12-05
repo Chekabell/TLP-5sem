@@ -5,7 +5,8 @@ Translator::Translator()
 {
     _inputFile.open("input.txt", std::ios::in);
     curr = '\0';
-    _numberOfOperands = 1;
+    _numberOfOperations = 1;
+    _numberOfTriads = 0;
 }
 
 Translator::~Translator()
@@ -13,19 +14,11 @@ Translator::~Translator()
     _inputFile.close();
 }
 
-
 void Translator::StartParse()
 {
-    std::cout << "Begin parsing.\n";
     GetChar();
     while(curr != EOF)
         ProcS();
-
-    std::cout << "End parsing.\n";
-    std::cout << symTable.size() << " variables defined:\n";
-    
-    for(auto it = symTable.begin(); it != symTable.end(); it++)
-        std::cout << it->first << " = " << it->second << '\n';
 }
 
 void Translator::GetChar()
@@ -84,28 +77,34 @@ int Translator::ProcS()
         GetChar();
     }
 
+    
+    std::cout << ++_numberOfTriads << ":\t" << "V(" << id << ", @)\n";
+    int leftOp = _numberOfTriads;
     if(curr != ',') Error("Expected ','");
-    GetChar(); 
-    std::pair<std::string, int> pair = std::make_pair(id, ProcE());
-    AddOrReplace(pair);
+    GetChar();
+    int rightOp = ProcE();
+    symTable.push_back({id, rightOp});
+    std::cout << ++_numberOfTriads << ":\t" << "=(^" << leftOp << ", ^" << rightOp <<")\n";
     if(curr != ')') Error("Expected ')'");
     GetChar();
     
-    std::cout << "Operator defined " << _numberOfOperands << ":\t";
-    std::cout << pair.first << " = " << pair.second << '\n';
-    _numberOfOperands++;
-    return pair.second;
+    return _numberOfTriads;
 }
 
 
-int Translator::ProcE()
+int Translator::ProcE(int minus)
 {
     if(IsDigit(curr))
         Error("Expected a '#' or operand");
     if (curr == '-')
     {
-        GetChar();
-        return ProcE()*(-1);
+        int i = 0;
+        while(curr == '-')
+        {
+            GetChar();
+            i++;
+        }
+        return ProcE(i);
     }
     if (curr == '+')
         return ProcT();
@@ -114,7 +113,7 @@ int Translator::ProcE()
     if (curr == '(')
         return ProcS();
     if (curr == '#')
-        return ProcR();
+        return ProcR(minus);
     if (IsAlpha(curr))
         return ProcI();
     Error("Error");
@@ -122,24 +121,26 @@ int Translator::ProcE()
 
 int Translator::ProcT()
 {
-    int res;
+    int leftOp, rightOp;
     if(curr == '+')
     {
         GetChar();
         if(curr != '(') Error("Expected '('");
         GetChar();
-        res = ProcE();
+        leftOp = ProcE();
         if(curr != ',') Error("Expected ','");
         GetChar();
         while(curr != EOF)
         {
-            res += ProcE();
+            rightOp = ProcE();
+            std::cout << ++_numberOfTriads << ":\t" << "+(^" << leftOp << ", ^" << rightOp << ")\n";
             if (curr == ')')
                 break;
             if(curr == ',')
                 GetChar();
             else
                 Error("Expected ',' or ')'");
+            leftOp = _numberOfTriads;
         }
     }
     if(curr == '*')
@@ -147,22 +148,24 @@ int Translator::ProcT()
         GetChar();
         if(curr != '(') Error("Expected '('");
         GetChar();
-        res = ProcE();
+        leftOp = ProcE();
         if(curr != ',') Error("Expected ','");
         GetChar();
         while(curr != EOF)
         {
-            res *= ProcE();
+            rightOp = ProcE();
+            std::cout << ++_numberOfTriads << ":\t" << "*(^" << leftOp << ", ^" << rightOp << ")\n";
             if (curr == ')')
                 break;
             if(curr == ',')
                 GetChar();
             else
                 Error("Expected ',' or ')'");
+            leftOp = _numberOfTriads;
         }
     }
     GetChar();
-    return res;
+    return ++rightOp;
 }
 
 int Translator::ProcI()
@@ -178,13 +181,14 @@ int Translator::ProcI()
     {
         if(x.first == id)
         {
-            return x.second;
+            std::cout << ++_numberOfTriads << ":\t" << "V(" << id << ", @)\n";
+            return _numberOfTriads;
         }
     }
     Error("Operator '" + id + "' not defined");
 }
 
-int Translator::ProcR()
+int Translator::ProcR(int minus)
 {
     std::string result;
     GetChar();
@@ -192,7 +196,13 @@ int Translator::ProcR()
         result += curr;
         GetChar();
     }
-    return stoi(result);
+    std::cout << ++_numberOfTriads << ":\t" << "C(" << result << ", @)\n";
+    while(minus)
+    {
+        std::cout << ++_numberOfTriads << ":\t" << "-(^" << _numberOfTriads-1 << ", @)\n";
+        minus--;
+    }
+    return _numberOfTriads;
 }
 
 

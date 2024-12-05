@@ -14,10 +14,11 @@ public:
     void StartParse();
     
 private:
-    std::vector<std::pair<std::string, int>> symTable; 
+    std::vector<std::pair<std::string, int>> symTable;
     std::ifstream _inputFile;
     char curr;
-    long _numberOfOperands;
+    long _numberOfOperations;
+    long _numberOfTriads;
     
     void GetChar();
     bool IsDigit(char value);
@@ -27,9 +28,9 @@ private:
     void AddOrReplace(const std::pair<std::string, int>& value);
     
     int ProcS();
-    int ProcE();
+    int ProcE(int minus = 0);
     int ProcT();
     int ProcI();
-    int ProcR();
+    int ProcR(int minus = 0);
     
 };
