@@ -65,7 +65,16 @@ void Translator::AddOrReplace(const std::pair<std::string, int>& value)
     symTable.push_back(value);
 }
 
-int Translator::ProcS()
+void Translator::printMinus(int minus)
+{
+    while(minus)
+    {
+        std::cout << ++_numberOfTriads << ":\t" << "-(^" << _numberOfTriads-1 << ", @)\n";
+        minus--;
+    }
+}
+
+int Translator::ProcS(int minus)
 {
     if(curr != '(') Error("Expected '('");
     GetChar();
@@ -87,10 +96,9 @@ int Translator::ProcS()
     std::cout << ++_numberOfTriads << ":\t" << "=(^" << leftOp << ", ^" << rightOp <<")\n";
     if(curr != ')') Error("Expected ')'");
     GetChar();
-    
+    printMinus(minus);
     return _numberOfTriads;
 }
-
 
 int Translator::ProcE(int minus)
 {
@@ -107,19 +115,19 @@ int Translator::ProcE(int minus)
         return ProcE(i);
     }
     if (curr == '+')
-        return ProcT();
+        return ProcT(minus);
     if (curr == '*')
-        return ProcT();
+        return ProcT(minus);
     if (curr == '(')
-        return ProcS();
+        return ProcS(minus);
     if (curr == '#')
         return ProcR(minus);
     if (IsAlpha(curr))
-        return ProcI();
+        return ProcI(minus);
     Error("Error");
 }
 
-int Translator::ProcT()
+int Translator::ProcT(int minus)
 {
     int leftOp, rightOp;
     if(curr == '+')
@@ -165,10 +173,11 @@ int Translator::ProcT()
         }
     }
     GetChar();
+    printMinus(minus);
     return ++rightOp;
 }
 
-int Translator::ProcI()
+int Translator::ProcI(int minus)
 {
     std::string id;
     while(IsAlpha(curr))
@@ -182,6 +191,7 @@ int Translator::ProcI()
         if(x.first == id)
         {
             std::cout << ++_numberOfTriads << ":\t" << "V(" << id << ", @)\n";
+            printMinus(minus);
             return _numberOfTriads;
         }
     }
@@ -197,11 +207,7 @@ int Translator::ProcR(int minus)
         GetChar();
     }
     std::cout << ++_numberOfTriads << ":\t" << "C(" << result << ", @)\n";
-    while(minus)
-    {
-        std::cout << ++_numberOfTriads << ":\t" << "-(^" << _numberOfTriads-1 << ", @)\n";
-        minus--;
-    }
+    printMinus(minus);
     return _numberOfTriads;
 }
 

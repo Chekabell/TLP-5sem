@@ -19,7 +19,8 @@ private:
     char curr;
     long _numberOfOperations;
     long _numberOfTriads;
-    
+
+    void printMinus(int minus);
     void GetChar();
     bool IsDigit(char value);
     bool IsSpace(char value);
@@ -27,10 +28,10 @@ private:
     void Error (std::string msg);
     void AddOrReplace(const std::pair<std::string, int>& value);
     
-    int ProcS();
+    int ProcS(int minus = 0);
     int ProcE(int minus = 0);
-    int ProcT();
-    int ProcI();
+    int ProcT(int minus = 0);
+    int ProcI(int minus = 0);
     int ProcR(int minus = 0);
     
 };
