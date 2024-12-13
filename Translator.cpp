@@ -5,7 +5,6 @@ Translator::Translator()
 {
     _inputFile.open("input.txt", std::ios::in);
     curr = '\0';
-    _numberOfOperations = 1;
     _numberOfTriads = 0;
 }
 
@@ -65,16 +64,7 @@ void Translator::AddOrReplace(const std::pair<std::string, int>& value)
     symTable.push_back(value);
 }
 
-void Translator::printMinus(int minus)
-{
-    while(minus)
-    {
-        std::cout << ++_numberOfTriads << ":\t" << "-(^" << _numberOfTriads-1 << ", @)\n";
-        minus--;
-    }
-}
-
-int Translator::ProcS(int minus)
+int Translator::ProcS()
 {
     if(curr != '(') Error("Expected '('");
     GetChar();
@@ -96,38 +86,34 @@ int Translator::ProcS(int minus)
     std::cout << ++_numberOfTriads << ":\t" << "=(^" << leftOp << ", ^" << rightOp <<")\n";
     if(curr != ')') Error("Expected ')'");
     GetChar();
-    printMinus(minus);
     return _numberOfTriads;
 }
 
-int Translator::ProcE(int minus)
+int Translator::ProcE()
 {
     if(IsDigit(curr))
         Error("Expected a '#' or operand");
     if (curr == '-')
     {
-        int i = 0;
-        while(curr == '-')
-        {
-            GetChar();
-            i++;
-        }
-        return ProcE(i);
+        GetChar();
+        int triad = ProcE();
+        std::cout << ++_numberOfTriads << ":\t" << "-(^" << triad << ", @)\n";
+        return _numberOfTriads;
     }
     if (curr == '+')
-        return ProcT(minus);
+        return ProcT();
     if (curr == '*')
-        return ProcT(minus);
+        return ProcT();
     if (curr == '(')
-        return ProcS(minus);
+        return ProcS();
     if (curr == '#')
-        return ProcR(minus);
+        return ProcR();
     if (IsAlpha(curr))
-        return ProcI(minus);
+        return ProcI();
     Error("Error");
 }
 
-int Translator::ProcT(int minus)
+int Translator::ProcT()
 {
     int leftOp, rightOp;
     if(curr == '+')
@@ -173,11 +159,10 @@ int Translator::ProcT(int minus)
         }
     }
     GetChar();
-    printMinus(minus);
-    return ++rightOp;
+    return _numberOfTriads;
 }
 
-int Translator::ProcI(int minus)
+int Translator::ProcI()
 {
     std::string id;
     while(IsAlpha(curr))
@@ -191,14 +176,13 @@ int Translator::ProcI(int minus)
         if(x.first == id)
         {
             std::cout << ++_numberOfTriads << ":\t" << "V(" << id << ", @)\n";
-            printMinus(minus);
             return _numberOfTriads;
         }
     }
     Error("Operator '" + id + "' not defined");
 }
 
-int Translator::ProcR(int minus)
+int Translator::ProcR()
 {
     std::string result;
     GetChar();
@@ -207,7 +191,6 @@ int Translator::ProcR(int minus)
         GetChar();
     }
     std::cout << ++_numberOfTriads << ":\t" << "C(" << result << ", @)\n";
-    printMinus(minus);
     return _numberOfTriads;
 }
 
