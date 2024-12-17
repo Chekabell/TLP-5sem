@@ -18,27 +18,14 @@
 // I -> aI | bI | cI ... |zI | a | b | c | ... | z
 // R -> 0D | 1D | 2D ... |9D | 0 | 1 | 2 | ... | 9
 
-// S -> I(E)
-// E -> -E | + (T) | * (T) | S | I | #R
-// T -> E, T | E
-// I -> aI | bI | cI ... | zI | _I | a | b | c | ... | z | _
-// R -> 0D | 1D | 2D ... | 9D | 0 | 1 | 2 | ... | 9
-
-/*
- * (I , E)
- * (I , S)
- * (I , (I, E))
- * (A , (A, M))
- * (a , (b, I))
- * (a , (b, A))
- * (a , (b, c))
- */
 int main()
 {
     auto translator = new Translator();
     try
     {
         translator->StartParse();
+        std::cout << std::endl;
+        translator->StartOptimize();
     }
     catch(const char* e)
     {
