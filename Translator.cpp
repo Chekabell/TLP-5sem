@@ -311,17 +311,7 @@ void Translator::ToTriad(Token& deletedToken, std::deque<Token> dequeToken, std:
         else if(deletedToken.GetOperation()== OpeartionType::Multiply)
             triadsList.push_back(new Triad(Triad::Multiply,Triad::IsLink,Triad::IsLink,std::to_string(dequeToken[0].getNumberTriad()),std::to_string(dequeToken[2].getNumberTriad())));
     }
-    else if(rule == "+(T)")
-    {
-        deletedToken.setTriadNumber(triadsList.size());
-        deletedToken.SetOperation(tokenStack.top().GetOperation());
-    }
-    else if(rule == "*(T)")
-    {
-        deletedToken.setTriadNumber(triadsList.size());
-        deletedToken.SetOperation(tokenStack.top().GetOperation());
-    }
-    else if(rule == "-(T)")
+    else if(rule[0] == '+' || rule[0] == '-' || rule[0] == '*')
     {
         deletedToken.setTriadNumber(triadsList.size());
         deletedToken.SetOperation(tokenStack.top().GetOperation());
