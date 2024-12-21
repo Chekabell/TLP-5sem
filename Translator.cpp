@@ -87,7 +87,7 @@ void Translator::Start()
 
         currentToken = GetToken();
 
-        if(tokenStack.top().GetOperation() !=IsNotBinary)
+        if(tokenStack.top().GetOperation() != IsNotBinary)
             currentToken.SetOperation(tokenStack.top().GetOperation());
         
         if(currentToken.GetSym() == '-')
