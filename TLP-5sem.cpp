@@ -12,11 +12,13 @@
 // A -> a | b | c | ... | z
 // D -> 0 | 1 | 2 | ... | 9
 
+
 // S -> (I, E)
-// E -> -E | + (T) | * (T) | S | I | #R
+// E -> -E | + (E, E) | * (E, E) | S | I | C | E, E
+
+// S -> (I, E)
+// E -> -E | + (T) | * (T) | S | I | C
 // T -> E,T | E
-// I -> aI | bI | cI ... |zI | a | b | c | ... | z
-// R -> 0D | 1D | 2D ... |9D | 0 | 1 | 2 | ... | 9
 
 // S -> I(E)
 // E -> -E | + (T) | * (T) | S | I | #R
@@ -38,7 +40,7 @@ int main()
     auto translator = new Translator();
     try
     {
-        translator->StartParse();
+        translator->Start();
     }
     catch(const char* e)
     {
