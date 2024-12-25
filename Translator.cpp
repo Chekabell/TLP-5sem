@@ -227,7 +227,11 @@ void Translator::Reduce()
     {
         while(!dequeRules.empty() && dequeRules.front().getPrecedingType() != PrecedingType::Less
             && dequeRules.front().getPrecedingType() != PrecedingType::LessOrEqual)
-                dequeRules.pop_front();
+        {
+            if(dequeRules.size() == 1 && dequeRules.front().getPrecedingType() == PrecedingType::Equal)
+                Error("Syntax error");
+            dequeRules.pop_front();
+        }
 
         ruleString = DequeToString(dequeRules);
         rule = FindRule(ruleString);
