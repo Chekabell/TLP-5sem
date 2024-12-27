@@ -153,7 +153,6 @@ void Translator::CheckThirdRule(Triad* tr)
                 linkTriad->operation = Triad::Operations::Deleted;
             }
         }
-    }
 }
 
 void Translator::CheckFourthRule(Triad* tr)
