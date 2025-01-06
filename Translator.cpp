@@ -194,5 +194,3 @@ int Translator::ProcR()
     }
     return stoi(result);
 }
-
-
