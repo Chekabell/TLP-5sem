@@ -19,7 +19,6 @@ public:
 
 class Translator
 {
-    friend class Triad;
 public:
     Translator();
     ~Translator();
