@@ -1,5 +1,62 @@
 #include "Translator.h"
 
+Triad::Triad(Operations op, Operands leftOp, Operands rightOp, std::string leftValue, std::string rightValue)
+{
+    operation = op;
+    leftOperandType = leftOp;
+    rightOperandType = rightOp;
+    leftOperandValue = leftValue;
+    rightOperandValue = rightValue;
+}
+
+std::ostream& operator<<(std::ostream& stream, const Triad& triad)
+{
+    switch (triad.operation)
+    {
+    case Triad::Deleted:
+        stream << "DELETED TRIAD";
+        return stream;
+    case Triad::Minus:
+        std::cout << "-";
+        break;
+    case Triad::Plus:
+        std::cout << "+";
+        break;
+    case Triad::Multiply:
+        std::cout << "*";
+        break;
+    case Triad::Assign:
+        std::cout << "=";
+        break;
+    case Triad::Variable:
+        std::cout << "V";
+        break;
+    case Triad::Const:
+        std::cout << "C";
+        break;
+    }
+        
+    std::cout << "(";
+        
+    if (triad.leftOperandType == Triad::IsLink)
+        std::cout << "^" + triad.leftOperandValue;
+    else if (triad.leftOperandType == Triad::IsEmpty)
+        std::cout << "@";
+    else
+        std::cout << triad.leftOperandValue;
+
+    std::cout << ", ";
+        
+    if (triad.rightOperandType == Triad::IsLink)
+        std::cout << "^" + triad.rightOperandValue;
+    else if (triad.rightOperandType == Triad::IsEmpty)
+        std::cout << "@";
+    else
+        std::cout << triad.rightOperandValue;
+        
+    std::cout << ")";
+    return stream;
+}
 
 Translator::Translator()
 {
@@ -24,11 +81,9 @@ void Translator::GetChar()
 {
     curr = _inputFile.get();
     while(IsSpace(curr))
-    {
         curr = _inputFile.get();
-    }
-    //std::cout << curr;
 }
+
 bool Translator::IsDigit(char value)
 {
     return value >= '0' && value <= '9';
@@ -78,12 +133,18 @@ int Translator::ProcS()
 
     
     std::cout << ++_numberOfTriads << ":\t" << "V(" << id << ", @)\n";
+    triadTable.push_back(*new Triad(Triad::Variable, Triad::IsVariable, Triad::IsEmpty, id));
+    
     int leftOp = _numberOfTriads;
     if(curr != ',') Error("Expected ','");
+    
     GetChar();
     int rightOp = ProcE();
     symTable.push_back({id, rightOp});
+    
     std::cout << ++_numberOfTriads << ":\t" << "=(^" << leftOp << ", ^" << rightOp <<")\n";
+    triadTable.push_back(*new Triad(Triad::Assign, Triad::IsLink, Triad::IsLink, std::to_string(leftOp), std::to_string(rightOp)));
+    
     if(curr != ')') Error("Expected ')'");
     GetChar();
     return _numberOfTriads;
@@ -98,6 +159,7 @@ int Translator::ProcE()
         GetChar();
         int triad = ProcE();
         std::cout << ++_numberOfTriads << ":\t" << "-(^" << triad << ", @)\n";
+        triadTable.push_back(*new Triad(Triad::Minus, Triad::IsLink, Triad::IsEmpty, std::to_string(triad)));
         return _numberOfTriads;
     }
     if (curr == '+')
@@ -128,6 +190,7 @@ int Translator::ProcT()
         {
             rightOp = ProcE();
             std::cout << ++_numberOfTriads << ":\t" << "+(^" << leftOp << ", ^" << rightOp << ")\n";
+            triadTable.push_back(*new Triad(Triad::Plus, Triad::IsLink, Triad::IsLink, std::to_string(leftOp), std::to_string(rightOp)));
             if (curr == ')')
                 break;
             if(curr == ',')
@@ -149,6 +212,7 @@ int Translator::ProcT()
         {
             rightOp = ProcE();
             std::cout << ++_numberOfTriads << ":\t" << "*(^" << leftOp << ", ^" << rightOp << ")\n";
+            triadTable.push_back(*new Triad(Triad::Multiply, Triad::IsLink, Triad::IsLink, std::to_string(leftOp), std::to_string(rightOp)));
             if (curr == ')')
                 break;
             if(curr == ',')
@@ -176,6 +240,7 @@ int Translator::ProcI()
         if(x.first == id)
         {
             std::cout << ++_numberOfTriads << ":\t" << "V(" << id << ", @)\n";
+            triadTable.push_back(*new Triad(Triad::Variable, Triad::IsVariable, Triad::IsEmpty, id));
             return _numberOfTriads;
         }
     }
@@ -191,7 +256,6 @@ int Translator::ProcR()
         GetChar();
     }
     std::cout << ++_numberOfTriads << ":\t" << "C(" << result << ", @)\n";
+    triadTable.push_back(*new Triad(Triad::Const, Triad::IsConst, Triad::IsEmpty, result));
     return _numberOfTriads;
 }
-
-
