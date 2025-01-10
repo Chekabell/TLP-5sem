@@ -1,7 +1,5 @@
 #include "Translator.h"
 
-#include <tuple>
-
 Triad::Triad(Operations op, Operands leftOp, Operands rightOp, std::string leftValue, std::string rightValue)
 {
     operation = op;

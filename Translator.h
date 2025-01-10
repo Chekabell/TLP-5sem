@@ -51,7 +51,4 @@ private:
     std::string getStackString();
     void logStack(std::string);
     void outputTriads();
-    
-
-    
 };

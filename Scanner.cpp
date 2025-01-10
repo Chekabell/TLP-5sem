@@ -1,7 +1,5 @@
 #include "Scanner.h"
 
-#include <iostream>
-
 Scanner::Scanner(const std::string& fileName)
 {
     _inputFile = std::fstream(fileName);
